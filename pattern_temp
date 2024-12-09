@@ -1,0 +1,78 @@
+https://www.dibbs.bsm.dla.mil/RFQ/RFQNsn.aspx?value=5305000014771&category=fsc&Scope=open
+
+https://www.dibbs.bsm.dla.mil/RFQ/RFQNsn.aspx?value=5305000018154&category=fsc&Scope=open
+
+
+// SPE7M024T9819.PDF
+// SPE4A624T16WW.PDF
+// SPE4A624T21NW.PDF
+
+		- Contract Number								-> 1 page - REQUEST NO
+		- PR Number										-> 1 page - REQUISITION/PURCHASE REQUEST NO
+		- Date Issued									-> 1 page - DATE ISSUED
+		- NSN Number									-> 6-7 page - NSN/MATERIAL
+		- Part Number									-> 6-7 page - P/N
+		- Item Description								-> 6-7 page - ITEM DESCRIPTION
+	#	- Type											-> I have to get this info from dibb site, just from list
+		- Drawing Information							-> 6-8 page - CRITICAL APPLICATION ITEM
+	#	- Manufacturer Required							-> This is usually not mentioned
+		- Procurement History							-> 4-5 page - Procurement History for NSN...
+		- CLIN 0001 Qty									-> 7-9 page - QUANTITY
+		- Unit of CLIN 0001								-> 7-9 page - UI
+	#	- Unit Count									-> 7-9 page - UNIT PRICE
+		- Delievery Date Due 							-> 7-9 page - DELIVERY(IN DATE)
+		- Inspection Point								-> 7-9 page - INSPECTION POINT
+	#	- Government First Article Testing				-> Almost of case, this is not mentioned
+	#	- Contractor First Article Testing				-> Almost of case, this is not mentioned
+	#	- Government Production Lost Testing			-> Almost of case, this is not mentioned
+	#	- Contractor Production Lot Testing				-> Almost of case, this is not mentioned
+		- Packaging Requirements						-> 7-9 page - PKGING 
+
+		contractNumber: 'SPE4A6-24-T-16WW',
+		prNumber: '7008465333',
+		dateIssued: '2024 JUL 25',
+		nsnNumber: '5305000018154',
+		partNumber: 'ABS20642-4F12',
+		itemDescription: 'SCREW,MACHINE',
+	#	type: 'Info unavailable (type)',
+		drawingInformation: 'PATTONAIR USA INC 02310 P/N ABS20642-4F12',
+	#	manufacturerRequired: 'Info unavailable (manufacturerRequired)',
+		procurementHistory: 
+		clinQuantity: '40.000',
+		unitOfClin: 'EA',
+	#	unitCount: 'Info unavailable (unitCount)',
+		deliveryDateDue: '0102 ',
+		inspectionPoint: ' DESTINATION ',
+	#	govFirstArticleTesting: 'Info unavailable (govFirstArticleTesting)',
+	#	contractorFirstArticleTesting: 'Info unavailable (contractorFirstArticleTesting)',
+	#	govProductionLotTesting: 'Info unavailable (govProductionLotTesting)',
+	#	contractorProductionLotTesting: 'Info unavailable (contractorProductionLotTesting)',
+		packagingRequirements: 'PKGING DATA-QUP:010'
+
+
+
+
+
+        contractNumber: /REQUEST NO\.\s+([^\n]+)/,
+        prNumber: /REQUISITION\/PURCHASE REQUEST NO\.\s+([^\n]+)/,
+        dateIssued: /DATE ISSUED\s+([^\n]+)/,
+        nsnNumber: /NSN\/MATERIAL:(\d{13})/, // Regex for NSN number
+        partNumber: /P\/N\s+([^\n]+)/,
+        itemDescription: /ITEM DESCRIPTION\s+([^\n]+)/,
+        type: null, // Info from DIBBS, handled separately
+        drawingInformation: /CRITICAL APPLICATION ITEM\s+([^\n]+)/,
+        manufacturerRequired: null, // Info often not mentioned
+        procurementHistory: /Procurement History([\s\S]*?)(?=\n{2,}|$)/, // Capture everything after 'Procurement History'
+        clinQuantity: /CLIN([\s\S]*?)(?=\n{2,}|$)/,
+        unitOfClin: null,
+        unitCount: null,
+        deliveryDateDue: null,
+        inspectionPoint: null,
+        govFirstArticleTesting: null, // Info not mentioned in most cases
+        contractorFirstArticleTesting: null, // Info not mentioned in most cases
+        govProductionLotTesting: null, // Info not mentioned
+        contractorProductionLotTesting: null, // Info not mentioned
+        packagingRequirements: /PKGING\s+([^\n]+)/,
+
+
+
