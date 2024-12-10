@@ -1,11 +1,21 @@
-// excelWriter.js
 const xlsx = require('xlsx');
 
-// Function to write the extracted data to an Excel file
-function writeToExcel(data, fileName) {
+// Function to write or append data to an Excel file
+function writeOrAppendToExcel(data, fileName, sheetName) {
     try {
+        let wb;
+
+        // Check if the file already exists
+        try {
+            wb = xlsx.readFile(fileName); // Read the existing workbook
+        } catch (error) {
+            // If file doesn't exist, create a new workbook
+            console.log(`${fileName} does not exist. Creating a new workbook.`);
+            wb = xlsx.utils.book_new();
+        }
+
         const ws_data = [];
-        
+
         // Convert the extracted data into key-value format
         for (const [key, value] of Object.entries(data)) {
             if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -18,8 +28,15 @@ function writeToExcel(data, fileName) {
                 // If value is an array, display each item in new lines
                 ws_data.push([key, '']);
                 value.forEach(item => {
-                	// console.log(item)
-                    ws_data.push([``,` ${item.cage }`, `${item.contractNumber }`, `${item.quantity }`, `${item.unitCost }`, `${item.awdDate }`, `${item.surplusMaterial }`]);
+                    ws_data.push([
+                        '',
+                        item.cage || '',
+                        item.contractNumber || '',
+                        item.quantity || '',
+                        item.unitCost || '',
+                        item.awdDate || '',
+                        item.surplusMaterial || ''
+                    ]);
                 });
             } else {
                 // If it's a simple value, just add the key and value
@@ -27,16 +44,18 @@ function writeToExcel(data, fileName) {
             }
         }
 
-        // Create a new workbook and write the data to the sheet
-        const wb = xlsx.utils.book_new();
+        // Create a new sheet from the data
         const ws = xlsx.utils.aoa_to_sheet(ws_data);
-        xlsx.utils.book_append_sheet(wb, ws, 'Extracted Data');
 
-        // Write the workbook to a file
+        // Append the new sheet to the workbook
+        xlsx.utils.book_append_sheet(wb, ws, sheetName);
+
+        // Write the updated workbook back to the file
         xlsx.writeFile(wb, fileName);
+        console.log(`Data written to ${sheetName} in ${fileName}`);
     } catch (error) {
         console.error('Error writing to Excel file:', error);
     }
 }
 
-module.exports = { writeToExcel };
+module.exports = { writeOrAppendToExcel };
