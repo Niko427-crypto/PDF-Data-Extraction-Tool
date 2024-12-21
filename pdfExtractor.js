@@ -12,7 +12,7 @@ const patterns = {
     "Item Description": /ITEM DESCRIPTION\s+([^\n]+)/,
     Type: null, // Info from DIBBS, handled separately
     "Drawing Information": /CRITICAL APPLICATION ITEM\s+([^\n]+)/,
-    "Manufacturer Required": null, // Info often not mentioned
+    "Manufacturer Required": /.*P\/N\s+([A-Z0-9\-]+).*/g,
     "Procurement History": /Procurement History([\s\S]*?)(?=\n{2,}|$)/, // Capture everything after 'Procurement History'
     "Procurement History1": /SECTION A\nProcurement History([\s\S]*?)(?=\n{2,}|$)/, // Capture everything after 'Procurement History'
     "CLIN 0001 Qty": /CLIN([\s\S]*?)(?=\n{2,}|$)/,
@@ -20,6 +20,7 @@ const patterns = {
     "Unit Count": null,
     "Delievery Date Due": /DELIVERY \(IN DAYS\):\s*(\S+)/,
     "Inspection Point": /INSPECTION POINT:\s+(\S+)/,
+    "Acceptance Point": /ACCEPTANCE POINT:\s+(\S+)/,
     "Government First Article Testing": null, // Info not mentioned in most cases
     "Contractor First Article Testing": null, // Info not mentioned in most cases
     "Government Production Lost Testing": null, // Info not mentioned
@@ -67,10 +68,17 @@ function extractFieldData(inputText, patterns) {
             const match = inputText.match(regex);
             if (key == "Packaging Requirements"){
                 // console.log(match[0])
-                extractedData[key] = match ? match[0] : 'Not found';
+                extractedData[key] = match ? match[0] : 'no';
                 continue
             }
-            extractedData[key] = match ? match[1].trim() : 'Not found';
+            if (key == "Manufacturer Required"){
+                extractedData[key] = match ? match : 'no';
+                if( extractedData[key] != "no")
+                    extractedData[key] = match.join("\n")
+                // console.log(extractedData[key])
+                continue
+            }
+            extractedData[key] = match ? match[1].trim() : 'no';
         } else {
             extractedData[key] = `no`; // Handle special cases where regex is null
         }
@@ -84,7 +92,7 @@ function extractCombinedProcurementHistory(extractedData) {
         ...extractProcurementHistory(extractedData["Procurement History"] || ''),
         ...extractProcurementHistory(extractedData["Procurement History1"] || '')
     ];
-    extractedData["Procurement History"] = procurementHistory.length > 0 ? procurementHistory : 'Not found';
+    extractedData["Procurement History"] = procurementHistory.length > 0 ? procurementHistory : 'no';
     return extractedData;
 }
 
@@ -100,8 +108,8 @@ function processClinData(extractedData) {
         extractedData["Unit of CLIN 0001"] = match_clin[4];
         extractedData.unitCount = match_clin[6];
     } else {
-        extractedData["CLIN 0001 Qty"] = 'Not found';
-        extractedData["Unit of CLIN 0001"] = 'Not found';
+        extractedData["CLIN 0001 Qty"] = 'no';
+        extractedData["Unit of CLIN 0001"] = 'no';
     }
     
     return extractedData;
@@ -114,7 +122,7 @@ async function interpretData(inputText) {
         // Extract and combine procurement history data
         extractedData = extractCombinedProcurementHistory(extractedData);
         // Clean up and remove "Procurement History1" field
-        extractedData["Procurement History1"] = undefined;
+        delete extractedData["Procurement History1"]
         // Process CLIN data
         extractedData = processClinData(extractedData);
 

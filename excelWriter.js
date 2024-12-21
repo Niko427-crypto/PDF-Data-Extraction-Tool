@@ -1,27 +1,24 @@
 const xlsx = require('xlsx');
 
 // Function to write or append data to an Excel file
-function writeOrAppendToExcel(data, fileName, sheetName) {
-    try {
-        let wb;
+function writeOrAppendToExcel(datas, saveLocation) {
+    let wb;
 
-        // Check if the file already exists
-        try {
-            wb = xlsx.readFile(fileName); // Read the existing workbook
-        } catch (error) {
-            // If file doesn't exist, create a new workbook
-            console.log(`${fileName} does not exist. Creating a new workbook.`);
-            wb = xlsx.utils.book_new();
-        }
+    // Check if the file already exists
+    wb = xlsx.utils.book_new();
 
-        const ws_data = [];
+    for (let data of datas) {
+        let sheetName = data.fileName
+
+        let ws_data = [];
 
         // Convert the extracted data into key-value format
-        for (const [key, value] of Object.entries(data)) {
+        for (let [key, value] of Object.entries(data)) {
+            if (key === 'fileName') continue
             if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
                 // If value is an object, display each key-value pair in new lines
                 ws_data.push([key, '']);
-                for (const [nestedKey, nestedValue] of Object.entries(value)) {
+                for (let [nestedKey, nestedValue] of Object.entries(value)) {
                     ws_data.push([`    ${nestedKey}`, nestedValue]);
                 }
             } else if (Array.isArray(value)) {
@@ -43,19 +40,20 @@ function writeOrAppendToExcel(data, fileName, sheetName) {
                 ws_data.push([key, value]);
             }
         }
-
         // Create a new sheet from the data
-        const ws = xlsx.utils.aoa_to_sheet(ws_data);
+        let ws = xlsx.utils.aoa_to_sheet(ws_data);
 
         // Append the new sheet to the workbook
-        xlsx.utils.book_append_sheet(wb, ws, sheetName);
-
-        // Write the updated workbook back to the file
-        xlsx.writeFile(wb, fileName);
-        console.log(`Data written to ${sheetName} in ${fileName}`);
-    } catch (error) {
-        console.error('Error writing to Excel file:', error);
+        try {
+            xlsx.utils.book_append_sheet(wb, ws, sheetName);
+        }catch (error) {
+            // console.log('Error duplicate sheetName:', error)
+        }
     }
+
+
+    // Write the updated workbook back to the file
+    xlsx.writeFile(wb, saveLocation);
 }
 
 module.exports = { writeOrAppendToExcel };

@@ -1,21 +1,20 @@
-const { extractTextFromPDF, interpretData } = require('./pdfExtractor');
-const { writeOrAppendToExcel } = require('./excelWriter.js'); // Use the updated function
+const { extractTextFromPDF, interpretData } = require('./pdfExtractor')
+const { writeOrAppendToExcel } = require('./excelWriter.js')
+const fs = require('fs')
+const xlsx = require('xlsx')
 
-// Path to your PDF file
-const filePath = './SPE4A624T16WW.PDF';
-const fileName = 'SPE4A624T16WW.xlsx'; // Ensure extension is `.xlsx`
-const sheetName = '232ddd3';
 
-async function main() {
+module.exports = async (filePath, fileName, type) => {
     try {
         const pdfText = await extractTextFromPDF(filePath);
 
         if (pdfText) {
             const data = await interpretData(pdfText);
-
-            // Write or append the extracted data to an Excel file
-            writeOrAppendToExcel(data, fileName, sheetName);
-            console.log(`Data saved to ${sheetName} in ${fileName}`);
+            data.fileName = fileName
+            data.Type = type
+            // console.log(data)
+            return data
+            // writeOrAppendToExcel(data, saveLocation, fileName, type);
         } else {
             console.error('No PDF text extracted.');
         }
@@ -23,6 +22,3 @@ async function main() {
         console.error('Error processing PDF:', error);
     }
 }
-
-// Run the main function
-main();
